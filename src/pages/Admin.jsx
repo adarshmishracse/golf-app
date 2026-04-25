@@ -4,61 +4,51 @@ import { collection, getDocs } from "firebase/firestore";
 
 export default function Admin() {
   const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllScores();
+    const fetchScores = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "scores"));
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setScores(data);
+      } catch (err) {
+        console.error("ADMIN ERROR:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScores();
   }, []);
 
-  const fetchAllScores = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "scores"));
-
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      console.log("ADMIN DATA:", data);
-      setScores(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  if (loading) {
+    return (
+      <div style={{ color: "white", padding: "20px" }}>
+        Loading Admin...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white p-6">
+    <div style={{ color: "white", padding: "20px" }}>
+      <h1>Admin Panel</h1>
 
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-
-      {/* Stats */}
-      <div className="mb-6">
-        <p className="text-gray-400">Total Entries</p>
-        <h2 className="text-2xl font-bold">{scores.length}</h2>
-      </div>
-
-      {/* List */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {scores.length === 0 && (
-          <p className="text-gray-400">No data found</p>
-        )}
-
-        {scores.map((s) => (
-          <div
-            key={s.id}
-            className="bg-white/10 backdrop-blur p-4 rounded-xl border border-gray-700"
-          >
-            <p className="text-sm text-gray-400">User</p>
-            <p className="font-bold break-all">{s.userId}</p>
-
-            <div className="flex justify-between mt-3">
-              <p>
-                Score: <span className="font-bold">{s.score}</span>
-              </p>
-              <p className="text-gray-400">{s.date}</p>
-            </div>
+      {scores.length === 0 ? (
+        <p>No data found</p>
+      ) : (
+        scores.map((s) => (
+          <div key={s.id} style={{ marginBottom: "10px" }}>
+            <p>User: {s.userId}</p>
+            <p>Score: {s.score}</p>
+            <p>Date: {s.date}</p>
           </div>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }

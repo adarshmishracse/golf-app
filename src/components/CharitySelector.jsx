@@ -55,7 +55,7 @@ export default function CharitySelector() {
   };
 
   return (
-    <div className="mt-10">
+    <div className="mt-12">
       <h2 className="text-2xl mb-4">Choose Your Charity</h2>
 
       <div className="grid md:grid-cols-3 gap-6">
